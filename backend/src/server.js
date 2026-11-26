@@ -7,13 +7,26 @@ const { Server } = require("socket.io");
 const app = express();
 const server = http.createServer(app);
 const PORT = Number(process.env.PORT) || 5000;
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+const CLIENT_URL = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(",").map(url => url.trim())
+  : ["http://localhost:5173"];
 const ROOMS = ["General", "Tech Support"];
 const users = new Map();
 
-app.use(cors({ origin: CLIENT_URL }));
+app.use(cors({
+  origin: CLIENT_URL,
+  methods: ["GET", "POST"]
+}));
+
 app.use(express.json());
-const io = new Server(server, { cors: { origin: CLIENT_URL, methods: ["GET", "POST"] } });
+
+const io = new Server(server, {
+  cors: {
+    origin: CLIENT_URL,
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
 
 app.get("/", (_req, res) => res.json({
   success: true,
